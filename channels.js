@@ -579,12 +579,7 @@ const CHANNELS = [
       "36623366333066353064363761653038": "30376666616563313961393363336665"
     }
   },
-    {
     "name": "TEST",
-    "mpd": "https://ec11-tpnet-waw.cdn-canalplus.pl/__token__exp%3D1759634964~acl%3D%2Flive%2Fstore01%2FCplus360%2F*~id%3D01K6RB6K7XHRR4R1AH3QJM6YET~data%3Dwid%3D0x9e7e86bb~hmac%3D133143d561d36e3647d040612e6ea09add681dfaf0732f5d0c5da81f170162bc/live/store01/Cplus360/hd2-dashdrm02/Cplus360.mpd",
-    "clearKeys": {
-      "10de399571da4ba6aef5890f60662ee4": "2445a529956e04e7b7b066cad28dcad4",
-      "289017ccc66f457ab09b5adc52805c5e": "9749bda3b3f0ff9ff641541337377cb3",
-    }
+    "mpd": "http://89.187.178.137:8080/canalplus/tracks-v1a1/mono.m3u8"
   },
 ];
