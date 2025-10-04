@@ -1,13 +1,34 @@
-/* channels.js (fragment z typami) */
+/* Generated from CDA TV.txt */
 const CHANNELS = [
-  { "name": "TVP1 HD", "mpd": "https://liveovh011.cda.pl/enc115/tvp1hdraw/tvp1hdraw.mpd", "type": "Ogólne" },
-  { "name": "TVP2 HD", "mpd": "https://liveovh010.cda.pl/enc115/tvp2hdraw/tvp2hdraw.mpd", "type": "Ogólne" },
-  { "name": "Polsat HD", "mpd": "https://lb2-e2-19.pluscdn.pl/ch/1502600/308/dash/20a18c30/live.mpd?uid=2253542221", "type": "Ogólne" },
-  { "name": "TV4", "mpd": "https://cdn-s-lb2.pluscdn.pl/ch/1502601/309/dash/e25c2c93/live.mpd?uid=2253542221", "type": "Ogólne" },
-  { "name": "TVPuls", "mpd": "https://liveovh011.cda.pl/enc030/tvpuls/tvpuls.mpd?uid=2253542221", "clearKeys": {"65346136356161323237353738393133":"34386266366363383037323536373666"}, "type": "Ogólne" },
-  { "name": "Puls 2", "mpd": "https://liveovh011.cda.pl/enc103/puls2/puls2.mpd?uid=2253542221", "clearKeys": {"35333962663265373936353465333161":"65666565366566663937393430316234"}, "type": "Ogólne" },
-];
-
+  {
+    "name": "TVP1 HD",
+    "mpd": "https://liveovh011.cda.pl/enc115/tvp1hdraw/tvp1hdraw.mpd"
+  },
+  {
+    "name": "TVP2 HD",
+    "mpd": "https://liveovh010.cda.pl/enc115/tvp2hdraw/tvp2hdraw.mpd"
+  },
+  {
+    "name": "Polsat HD",
+    "mpd": "https://lb2-e2-19.pluscdn.pl/ch/1502600/308/dash/20a18c30/live.mpd?uid=2253542221"
+  },
+  {
+    "name": "TV4",
+    "mpd": "https://cdn-s-lb2.pluscdn.pl/ch/1502601/309/dash/e25c2c93/live.mpd?uid=2253542221"
+  },
+  {
+    "name": "TVPuls",
+    "mpd": "https://liveovh011.cda.pl/enc030/tvpuls/tvpuls.mpd?uid=2253542221",
+    "clearKeys": {
+      "65346136356161323237353738393133": "34386266366363383037323536373666"
+    }
+  },
+  {
+    "name": "Puls 2",
+    "mpd": "https://liveovh011.cda.pl/enc103/puls2/puls2.mpd?uid=2253542221",
+    "clearKeys": {
+      "35333962663265373936353465333161": "65666565366566663937393430316234"
+    }
   },
   {
     "name": "Viasat True Crime",
