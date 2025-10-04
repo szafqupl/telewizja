@@ -9,9 +9,6 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.3.5/shaka-player.ui.min.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.3.5/controls.min.css"/>
 
-  <!-- (opcjonalnie) multiplexer TS -->
-  <script src="https://github.com/videojs/mux.js/releases/latest/download/mux.js"></script>
-
   <!-- Twoja lista kanałów -->
   <script src="channels.js"></script>
 
@@ -20,11 +17,16 @@
       --bg:#0e0f13; --panel:#151821; --panel-2:#1b2030; --txt:#e8eaf0; --muted:#a6adbb;
       --accent:#5ad3ff; --accent-2:#7cffb7; --danger:#ff6b6b;
       --sidebar-w:340px; --bp-md:960px; --bp-sm:640px;
+
+      --ease: cubic-bezier(.21,.75,.16,1);
+      --ease-out: cubic-bezier(.22,.61,.36,1);
+      --t-fast: 160ms; --t-med: 260ms; --t-slow: 420ms;
     }
     *{box-sizing:border-box}
-    html,body{height:100%;margin:0;background:var(--bg);color:var(--txt);font:14px/1.5 system-ui,Segoe UI,Inter,Roboto,sans-serif;-webkit-tap-highlight-color:transparent}
+    html,body{height:100%;margin:0;background:var(--bg);color:var(--txt);
+      font:14px/1.5 system-ui,Segoe UI,Inter,Roboto,sans-serif;-webkit-tap-highlight-color:transparent}
 
-    /* Layout: player zawsze po prawej (desktop) */
+    /* Layout */
     .app{
       display:grid; grid-template-columns:var(--sidebar-w) 1fr;
       height:100vh; overflow:hidden;
@@ -36,54 +38,81 @@
       background:linear-gradient(180deg,var(--panel),var(--panel-2));
       border-right:1px solid #242a3b;
       display:flex; flex-direction:column;
-      min-height:0; /* klucz dla scrolla w .list */
+      min-height:0;
       z-index:21;
+      will-change: transform;
     }
     .hdr{padding:14px 16px;font-weight:700;border-bottom:1px solid #242a3b;display:flex;justify-content:space-between;align-items:center;gap:8px}
     .hdr .close{display:none}
     .toolbar{display:grid;grid-template-columns:1fr 140px;gap:8px;padding:10px 12px}
-    input,select{padding:12px;border:1px solid #2a3147;border-radius:12px;background:#0f1320;color:var(--txt);min-height:44px}
-
-    /* Lista kanałów — prawdziwy scroll */
-    .list{
-      flex:1; min-height:0; overflow:auto; -webkit-overflow-scrolling:touch;
-      padding:8px;
+    input,select{
+      padding:12px;border:1px solid #2a3147;border-radius:12px;background:#0f1320;color:var(--txt);
+      min-height:44px; outline:none; transition:border-color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease);
     }
+    input:focus, select:focus{ border-color:#3a60c9; box-shadow:0 0 0 4px rgba(90,211,255,.12); }
 
-    .item{display:grid;grid-template-columns:1fr auto;align-items:center;gap:8px;padding:14px;margin:8px 0;background:#121626;border:1px solid #222842;border-radius:12px;cursor:pointer;min-height:56px}
-    .item:hover{border-color:#3a4470}
+    /* Lista kanałów (scroll + animacje) */
+    .list{ flex:1; min-height:0; overflow:auto; -webkit-overflow-scrolling:touch; padding:8px; position:relative; }
+    .item{
+      position:relative;
+      display:grid; grid-template-columns:1fr auto; align-items:center; gap:8px;
+      padding:14px; margin:8px 0; background:#121626; border:1px solid #222842; border-radius:12px;
+      cursor:pointer; min-height:56px;
+      transform: translateY(6px); opacity:0;
+      animation: item-in var(--t-slow) var(--ease-out) forwards;
+      transition: transform var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease);
+    }
+    .item:hover{ transform: translateY(-2px); border-color:#3a4470; box-shadow:0 10px 24px rgba(0,0,0,.25); }
+    .item:active{ transform: translateY(0) scale(.99); }
     .name{font-weight:600}
     .tags{display:flex;gap:6px;flex-wrap:wrap}
     .tag{font-size:12px;color:var(--muted);padding:4px 10px;border:1px solid #2a3147;border-radius:999px}
     .tag.drm{color:var(--accent-2);border-color:#2b4a2a}
     .tag.nokey{color:var(--danger);border-color:#4b2a2a}
 
-    /* Prawy panel / player */
+    /* Ripple */
+    .ripple {
+      position:absolute; inset:0; overflow:hidden; border-radius:inherit; pointer-events:none;
+    }
+    .ripple::after{
+      content:""; position:absolute; border-radius:999px; transform:translate(-50%,-50%) scale(0);
+      background: radial-gradient(closest-side, rgba(122,178,255,.35), rgba(122,178,255,0));
+      animation: ripple 600ms var(--ease-out);
+      left: var(--rx,50%); top: var(--ry,50%); width:220px; height:220px;
+    }
+
+    /* Prawy panel / player z delikatną pulsacją gdy gra */
     .right{position:relative;background:#000;min-width:0}
-    .player-wrap{position:absolute;inset:0}
+    .player-wrap{position:absolute;inset:0; outline:1px solid rgba(90,211,255,.12); border-radius:8px; }
+    .player-wrap.playing{ animation: glow 2.6s ease-in-out infinite; }
     video{width:100%;height:100%;object-fit:contain;background:#000}
-    .notice{position:absolute;left:16px;bottom:16px;background:#0f1323aa;border:1px solid #2b3352;border-radius:12px;padding:10px 12px;z-index:2}
+    .notice{
+      position:absolute;left:16px;bottom:16px;background:#0f1323aa;border:1px solid #2b3352;border-radius:12px;padding:10px 12px;z-index:2;
+      backdrop-filter: blur(4px); animation: float-in var(--t-slow) var(--ease-out) both;
+    }
 
-    /* Pasek górny (mobile) */
+    /* Topbar mobile */
     .topbar{display:none;position:absolute;z-index:5;left:0;right:0;top:0;padding:8px}
-    .icon{padding:10px 14px;border:1px solid #2a3147;border-radius:12px;background:#11162a;color:var(--txt);cursor:pointer}
+    .icon{padding:10px 14px;border:1px solid #2a3147;border-radius:12px;background:#11162a;color:var(--txt);cursor:pointer;
+      transition: transform var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease);}
+    .icon:hover{ transform: translateY(-1px); box-shadow:0 8px 20px rgba(0,0,0,.28) }
 
-    /* Nakładka do zamykania szuflady (mobile) */
+    /* Szuflada + scrim animowane */
     .scrim{display:none}
-
-    /* Mobile / tablet: lewy panel to szuflada, player nadal „po prawej” (pełny obszar) */
     @media (max-width: 960px){
       .app{grid-template-columns:1fr}
-      .topbar{display:flex;gap:8px;align-items:center}
+      .topbar{display:flex;gap:8px;align-items:center; animation: fade-in var(--t-med) var(--ease-out); }
       .left{
         position:fixed;left:0;top:0;bottom:0;width:min(92vw,360px);
-        transform:translateX(-100%);transition:transform .22s ease;box-shadow:0 12px 40px rgba(0,0,0,.45)
+        transform:translateX(-102%);transition:transform var(--t-med) var(--ease);
+        box-shadow:0 12px 40px rgba(0,0,0,.45)
       }
       .hdr .close{display:inline-flex}
       .toolbar{grid-template-columns:1fr;padding:8px}
       .notice{left:8px;right:8px;bottom:8px}
       .scrim{
-        position:fixed;inset:0;background:rgba(0,0,0,.6);opacity:0;pointer-events:none;transition:opacity .2s ease;display:block;z-index:10
+        position:fixed;inset:0;background:rgba(0,0,0,.6);opacity:0;pointer-events:none;
+        transition:opacity var(--t-med) var(--ease);display:block;z-index:10
       }
       .app.drawer-open .left{transform:none}
       .app.drawer-open .scrim{opacity:1;pointer-events:auto}
@@ -93,12 +122,38 @@
       html,body{font-size:15px}
       .item{padding:12px}
     }
+
+    /* Skeleton shimmer */
+    .skeleton{ position:relative; overflow:hidden; }
+    .s-rect{ height:14px; border-radius:6px; background:#1a2032; }
+    .s-rect.big{ height:18px }
+    .skeleton::after{
+      content:""; position:absolute; inset:0;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,.06), transparent);
+      transform: translateX(-100%); animation: shimmer 1.2s infinite;
+    }
+
+    /* Animacje */
+    @keyframes shimmer { 100% { transform: translateX(100%); } }
+    @keyframes item-in { from{opacity:0; transform:translateY(10px)} to{opacity:1; transform:translateY(0)} }
+    @keyframes fade-in { from{opacity:0} to{opacity:1} }
+    @keyframes float-in { from{opacity:0; transform:translateY(6px)} to{opacity:1; transform:translateY(0)} }
+    @keyframes ripple { to { transform:translate(-50%,-50%) scale(1); opacity:0 } }
+    @keyframes glow {
+      0%,100% { box-shadow: 0 0 0 rgba(90,211,255,.0) }
+      50%     { box-shadow: 0 0 0 6px rgba(90,211,255,.12) }
+    }
+
+    /* Preferencje dostępności */
+    @media (prefers-reduced-motion: reduce){
+      *{ animation:none !important; transition:none !important }
+    }
   </style>
 </head>
 <body>
 
 <div class="app" id="app">
-  <!-- Lewy panel: katalog kanałów -->
+  <!-- Lewy panel: katalog -->
   <aside class="left" aria-label="Lista kanałów" aria-modal="true">
     <div class="hdr">
       <div>Kanały</div>
@@ -110,7 +165,12 @@
         <option value="">Wszystkie kategorie</option>
       </select>
     </div>
-    <div id="list" class="list" role="listbox"></div>
+    <div id="list" class="list" role="listbox">
+      <!-- skeleton w trakcie inicjalizacji -->
+      <div class="item skeleton" aria-hidden="true"><div class="s-rect big" style="width:60%"></div></div>
+      <div class="item skeleton" aria-hidden="true"><div class="s-rect" style="width:40%"></div></div>
+      <div class="item skeleton" aria-hidden="true"><div class="s-rect" style="width:70%"></div></div>
+    </div>
   </aside>
 
   <!-- Prawy panel: odtwarzacz -->
@@ -118,10 +178,10 @@
     <div class="topbar">
       <button class="icon" id="btnOpen" aria-expanded="false" aria-controls="app">☰ Kanały</button>
     </div>
-    <div class="player-wrap" data-shaka-player-container>
+    <div class="player-wrap" id="playerWrap" data-shaka-player-container>
       <video id="video" data-shaka-player autoplay playsinline></video>
     </div>
-    <div class="notice">Uwaga: kanały bez klucza DRM mogą nie działać w przeglądarce. W takim wypadku użyj VLC.</div>
+    <div class="notice">Uwaga: kanały bez klucza DRM mogą nie działać w przeglądarce. Użyj VLC.</div>
   </main>
 
   <!-- Nakładka (kliknięcie zamyka szufladę) -->
@@ -129,7 +189,7 @@
 </div>
 
 <script>
-  // Anti-klik PPM/devtools (tylko drobna przeszkoda)
+  // Anti-PPM/devtools (tylko drobna przeszkoda)
   document.addEventListener('contextmenu', e => e.preventDefault());
   document.addEventListener('keydown', e => {
     if (e.key === 'F12') e.preventDefault();
@@ -144,6 +204,7 @@
   const scrim   = document.getElementById('scrim');
   const btnOpen = document.getElementById('btnOpen');
   const btnClose= document.getElementById('btnClose');
+  const playerWrap = document.getElementById('playerWrap');
 
   function openDrawer(){ appEl.classList.add('drawer-open'); btnOpen?.setAttribute('aria-expanded','true'); setTimeout(()=>qEl?.focus({preventScroll:true}),120); }
   function closeDrawer(){ appEl.classList.remove('drawer-open'); btnOpen?.setAttribute('aria-expanded','false'); }
@@ -184,11 +245,15 @@
     try { controls.getLocalization().changeLocale(['pl']); } catch(_) {}
     player.addEventListener('error', ev => console.error('Błąd odtwarzacza:', ev.detail));
     controls.addEventListener('error', ev => console.error('Błąd UI:', ev.detail));
+
+    // Pulsacja ramki gdy gra
+    videoEl.addEventListener('play', ()=> playerWrap.classList.add('playing'));
+    videoEl.addEventListener('pause',()=> playerWrap.classList.remove('playing'));
   }
   document.addEventListener('shaka-ui-loaded', setupShaka);
   document.addEventListener('shaka-ui-load-failed', () => console.error('Nie udało się załadować Shaka UI'));
 
-  // ===== Lista / filtr =====
+  // ===== Lista / filtr + animowane wejście =====
   function initCategories(){
     const set = new Set((CHANNELS||[]).map(c => (c.category || 'Inne')));
     [...set].sort().forEach(c=>{
@@ -196,6 +261,16 @@
     });
   }
   function safeHost(url){ try { return new URL(url).hostname.replace(/^www\./,''); } catch { return '—'; } }
+
+  function addRipple(el, ev){
+    let wrap = el.querySelector('.ripple'); if(!wrap){ wrap=document.createElement('span'); wrap.className='ripple'; el.appendChild(wrap); }
+    const rect = el.getBoundingClientRect();
+    wrap.style.setProperty('--rx', (ev.clientX-rect.left)+'px');
+    wrap.style.setProperty('--ry', (ev.clientY-rect.top)+'px');
+    // reset trick
+    wrap.classList.remove('go'); void wrap.offsetWidth; wrap.classList.add('go');
+  }
+
   function renderList(){
     const q=(qEl.value||'').toLowerCase().trim(); const cat=catEl.value;
     listEl.innerHTML='';
@@ -204,6 +279,7 @@
       .filter(c => (!cat || (c.category||'Inne')===cat))
       .forEach((c,idx)=>{
         const el=document.createElement('div'); el.className='item'; el.role='option';
+        el.style.animationDelay = (Math.min(idx,12)*40)+'ms'; // lekki stagger
         el.innerHTML=`
           <div>
             <div class="name">${c.name||'Kanał'}</div>
@@ -212,8 +288,9 @@
               <div class="tag ${c.clearKeys?'drm':'nokey'}">${c.clearKeys?'ClearKey':'brak klucza'}</div>
             </div>
           </div>
-          <div class="tag">${safeHost(c.mpd||'')}</div>`;
-        el.addEventListener('click', ()=>{ loadChannel(idx); closeDrawer(); });
+          <div class="tag">${safeHost(c.mpd||'')}</div>
+          <span class="ripple"></span>`;
+        el.addEventListener('click', (ev)=>{ addRipple(el, ev); loadChannel(idx); closeDrawer(); });
         listEl.appendChild(el);
       });
   }
@@ -227,7 +304,6 @@
     const isHLS = /\.m3u8(\?|$)/i.test(url);
 
     if (!isMPD && !isHLS){
-      // Link TS lub inny – zaproponuj VLC
       const go = confirm("Ten link nie jest MPD/HLS. Otworzyć w VLC?");
       if (go) location.href = "vlc://" + url;
       return;
@@ -243,7 +319,10 @@
   }
 
   // ===== Start =====
-  window.addEventListener('load', ()=>{ initCategories(); renderList(); /* można odpalić domyślny: loadChannel(0) */ });
+  window.addEventListener('load', ()=>{
+    initCategories();
+    renderList(); // zastępuje skeleton
+  });
   qEl.addEventListener('input', renderList);
   catEl.addEventListener('change', renderList);
 </script>
