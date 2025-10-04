@@ -562,7 +562,7 @@ const CHANNELS = [
     "mpd": "https://liveovh011.cda.pl/enc115/tvp1hdraw/tvp1hdraw.mpd"
     }
   },
-  { 
+  {
     "name": "Power TV HD",
     "mpd": "https://liveovh010.cda.pl/enc120/powertvhd/powertvhd.mpd?uid=2253542221",
     "clearKeys": {
