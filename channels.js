@@ -550,46 +550,54 @@ const CHANNELS = [
       "65333166666538393630306335323261": "39646438373762373934316461613837"
     }
   },
-  {
-    "name": "Kino Polska Muzyka",
-    "mpd": "https://liveovh010.cda.pl/enc122/kinopolskamuzyka/kinopolskamuzyka.mpd?uid=2253542221",
-    "clearKeys": {
-      "61613566616439336664363130343935": "30663836376237626664373862346264"
-    }
-  },
-  {
-    "name": "TEST",
-    "mpd": "https://liveovh011.cda.pl/enc115/tvp1hdraw/tvp1hdraw.mpd"
-    }
-  },
-  {
-    "name": "Power TV HD",
-    "mpd": "https://liveovh010.cda.pl/enc120/powertvhd/powertvhd.mpd?uid=2253542221",
-    "clearKeys": {
-      "64626638336639343661613336323137": "64313761383631363433343765326236"
-      
-    }
-  },
-  {
-    "name": "NUTA TV HD",
-    "mpd": "https://liveovh011.cda.pl/enc120/nutatvhd/nutatvhd.mpd?uid=2253542221",
-    "clearKeys": {
-      "31356662636264353035316635306536": "38353735666535336531373033313835"
-    }
-  },
-  {
-        }
-  },
-  {
-    "name": "TEST",
-    "mpd": "https://ineago2.cf.insyscd.net/eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c2VyLTI1MzU3IiwiaXAiOiIxODguMTI1LjE0OC4yNTQiLCJzaXRlIjoiSW5lYUdPIiwiU2Vzc2lvbklkIjoiZTc3Zjg4NTctOGVmZS00NTNmLTliMDktZTJmZWQwNmQ2M2RlIiwibmJmIjoxNzU5NjA2OTkzLCJleHAiOjE3NTk2OTMzOTMsImlzcyI6Imluc3lzIiwiYXVkIjoiY2RuLXByb3RlY3QifQ.5jZ2308BAwil5TJ2Kg9NN-I-_1x6-qo_l3UTz9q2Nh4/insysgo.live/live/eds/eleven-sports-1-fhd/dash/eleven-sports-1-fhd.mpd"
-    }
-  },
-  {
-    "name": "NUTA GOLD",
-    "mpd": "https://liveovh011.cda.pl/enc120/nutatvhd/nutatvhd.mpd?uid=2253542221",
-    "clearKeys": {
-      "36623366333066353064363761653038": "30376666616563313961393363336665"
-    }
+   {
+     "name": "Kino Polska Muzyka",
+     "mpd": "https://liveovh010.cda.pl/enc122/kinopolskamuzyka/kinopolskamuzyka.mpd?uid=2253542221",
+     "clearKeys": {
+       "61613566616439336664363130343935": "30663836376237626664373862346264"
+     }
+   },
+-  {
+-    "name": "TEST",
+-    "mpd": "https://liveovh011.cda.pl/enc115/tvp1hdraw/tvp1hdraw.mpd"
+-    }
+-  },
++  {
++    "name": "TEST",
++    "mpd": "https://liveovh011.cda.pl/enc115/tvp1hdraw/tvp1hdraw.mpd"
++  },
+   {
+     "name": "Power TV HD",
+     "mpd": "https://liveovh010.cda.pl/enc120/powertvhd/powertvhd.mpd?uid=2253542221",
+     "clearKeys": {
+       "64626638336639343661613336323137": "64313761383631363433343765326236"
+       
+     }
+   },
+   {
+     "name": "NUTA TV HD",
+     "mpd": "https://liveovh011.cda.pl/enc120/nutatvhd/nutatvhd.mpd?uid=2253542221",
+     "clearKeys": {
+       "31356662636264353035316635306536": "38353735666535336531373033313835"
+     }
+   },
+-  {
+-        }
+-  },
+-  {
+-    "name": "TEST",
+-    "mpd": "https://ineago2.cf.insyscd.net/eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c2VyLTI1MzU3IiwiaXAiOiIxODguMTI1LjE0OC4yNTQiLCJzaXRlIjoiSW5lYUdPIiwiU2Vzc2lvbklkIjoiZTc3Zjg4NTctOGVmZS00NTNmLTliMDktZTJmZWQwNmQ2M2RlIiwibmJmIjoxNzU5NjA2OTkzLCJleHAiOjE3NTk2OTMzOTMsImlzcyI6Imluc3lzIiwiYXVkIjoiY2RuLXByb3RlY3QifQ.5jZ2308BAwil5TJ2Kg9NN-I-_1x6-qo_l3UTz9q2Nh4/insysgo.live/live/eds/eleven-sports-1-fhd/dash/eleven-sports-1-fhd.mpd"
+-    }
+-  },
++  {
++    "name": "TEST",
++    "mpd": "https://ineago2.cf.insyscd.net/eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c2VyLTI1MzU3IiwiaXAiOiIxODguMTI1LjE0OC4yNTQiLCJzaXRlIjoiSW5lYUdPIiwiU2Vzc2lvbklkIjoiZTc3Zjg4NTctOGVmZS00NTNmLTliMDktZTJmZWQwNmQ2M2RlIiwibmJmIjoxNzU5NjA2OTkzLCJleHAiOjE3NTk2OTMzOTMsImlzcyI6Imluc3lzIiwiYXVkIjoiY2RuLXByb3RlY3QifQ.5jZ2308BAwil5TJ2Kg9NN-I-_1x6-qo_l3UTz9q2Nh4/insysgo.live/live/eds/eleven-sports-1-fhd/dash/eleven-sports-1-fhd.mpd"
++  },
+   {
+     "name": "NUTA GOLD",
+     "mpd": "https://liveovh011.cda.pl/enc120/nutatvhd/nutatvhd.mpd?uid=2253542221",
+     "clearKeys": {
+       "36623366333066353064363761653038": "30376666616563313961393363336665"
+     }
   }
 ];
