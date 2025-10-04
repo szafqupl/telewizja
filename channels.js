@@ -581,6 +581,6 @@ const CHANNELS = [
   },
     "name": "TEST",
     "mpd": "http://89.187.178.137:8080/canalplus/tracks-v1a1/mono.m3u8"
-  },
- )   
+    }
+  }
 ];
