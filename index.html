@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>NixoonnTV – katalog kanałów</title>
+
+  <!-- Shaka Player (UI) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.3.5/shaka-player.ui.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.3.5/controls.min.css"/>
+
+  <!-- (opcjonalnie) multiplexer TS -->
+  <script src="https://github.com/videojs/mux.js/releases/latest/download/mux.js"></script>
+
+  <!-- Twoja lista kanałów -->
+  <script src="channels.js"></script>
+
+  <style>
+    :root {
+      --bg: #0e0f13; --panel:#151821; --panel-2:#1b2030; --txt:#e8eaf0; --muted:#a6adbb;
+      --accent:#5ad3ff; --accent-2:#7cffb7; --danger:#ff6b6b;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;background:var(--bg);color:var(--txt);font:14px/1.5 system-ui, Segoe UI, Inter, Roboto, sans-serif}
+    .app{display:grid;grid-template-columns:340px 1fr;height:100vh}
+    .left{background:linear-gradient(180deg,var(--panel),var(--panel-2));border-right:1px solid #242a3b;display:flex;flex-direction:column}
+    .hdr{padding:14px 16px;font-weight:700;border-bottom:1px solid #242a3b}
+    .toolbar{display:grid;grid-template-columns:1fr 140px;gap:8px;padding:10px 12px}
+    input,select{padding:10px 12px;border:1px solid #2a3147;border-radius:12px;background:#0f1320;color:var(--txt)}
+    .list{overflow:auto;padding:8px}
+    .item{display:grid;grid-template-columns:1fr auto;align-items:center;gap:8px;padding:10px 12px;margin:6px 0;background:#121626;border:1px solid #222842;border-radius:12px;cursor:pointer}
+    .item:hover{border-color:#3a4470}
+    .name{font-weight:600}
+    .tags{display:flex;gap:6px}
+    .tag{font-size:12px;color:var(--muted);padding:2px 8px;border:1px solid #2a3147;border-radius:999px}
+    .tag.drm{color:var(--accent-2);border-color:#2b4a3a}
+    .tag.nokey{color:var(--danger);border-color:#4b2a2a}
+    .right{position:relative;background:#000}
+    .player-wrap{position:absolute;inset:0}
+    video{width:100%;height:100%;object-fit:contain;background:#000}
+    .notice{position:absolute;left:16px;bottom:16px;background:#0f1323aa;border:1px solid #2b3352;border-radius:12px;padding:10px 12px;z-index:2}
+  </style>
+</head>
+<body>
+<div class="app">
+  <aside class="left">
+    <div class="hdr">Kanały</div>
+    <div class="toolbar">
+      <input id="q" type="search" placeholder="Szukaj kanału…" />
+      <select id="cat">
+        <option value="">Wszystkie kategorie</option>
+      </select>
+    </div>
+    <div id="list" class="list" role="listbox" aria-label="Lista kanałów"></div>
+  </aside>
+
+  <main class="right">
+    <div class="player-wrap" data-shaka-player-container>
+      <video id="video" data-shaka-player autoplay playsinline></video>
+    </div>
+    <div class="notice">Kanały bez klucza DRM mogą nie ruszyć w przeglądarce (DRM/CORS). Wtedy użyj np. VLC.</div>
+  </main>
+</div>
+
+<script>
+  // Blokada menu kontekstowego i skrótów devtools (lekka przeszkoda, nie zabezpieczenie)
+  document.addEventListener('contextmenu', e => e.preventDefault());
+  document.addEventListener('keydown', e => {
+    if (e.key === 'F12') e.preventDefault();
+    if ((e.ctrlKey && e.shiftKey && ['I','J','C'].includes(e.key)) || (e.ctrlKey && e.key === 'U')) e.preventDefault();
+  });
+
+  let player, ui, controls;
+  async function bootShaka() {
+    const videoEl = document.getElementById('video');
+    ui = videoEl['ui']; controls = ui.getControls(); player = controls.getPlayer();
+    try { controls.getLocalization().changeLocale(['pl']); } catch(_) {}
+
+    player.addEventListener('error', ev => console.error('Błąd odtwarzacza:', ev.detail));
+    controls.addEventListener('error', ev => console.error('Błąd UI:', ev.detail));
+  }
+  document.addEventListener('shaka-ui-loaded', bootShaka);
+  document.addEventListener('shaka-ui-load-failed', () => console.error('Nie udało się załadować Shaka UI'));
+
+  // ===== RENDER =====
+  const listEl = document.getElementById('list');
+  const qEl = document.getElementById('q');
+  const catEl = document.getElementById('cat');
+
+  // Zasil dropdown kategoriami z CHANNELS (jeśli brak category -> "Inne")
+  function initCategories() {
+    const set = new Set((CHANNELS || []).map(c => (c.category || 'Inne')));
+    [...set].sort().forEach(c => {
+      const opt = document.createElement('option'); opt.value = c; opt.textContent = c; catEl.appendChild(opt);
+    });
+  }
+
+  function renderList() {
+    const q = (qEl.value || '').toLowerCase().trim();
+    const cat = catEl.value;
+    listEl.innerHTML = '';
+    (CHANNELS || [])
+      .filter(c => (!q || c.name.toLowerCase().includes(q)))
+      .filter(c => (!cat || (c.category || 'Inne') === cat))
+      .forEach((c, idx) => {
+        const item = document.createElement('div'); item.className = 'item'; item.setAttribute('role','option');
+        item.innerHTML = `
+          <div>
+            <div class="name">${c.name}</div>
+            <div class="tags">
+              <div class="tag">${c.category || 'Inne'}</div>
+              <div class="tag ${c.clearKeys ? 'drm' : 'nokey'}">${c.clearKeys ? 'ClearKey' : 'brak klucza'}</div>
+            </div>
+          </div>
+          <div class="tag">${new URL(c.mpd).hostname.replace(/^www\./,'')}</div>
+        `;
+        item.addEventListener('click', () => loadChannel(idx));
+        listEl.appendChild(item);
+      });
+  }
+  qEl.addEventListener('input', renderList);
+  catEl.addEventListener('change', renderList);
+
+  async function loadChannel(index) {
+    if (!player) return;
+    const ch = CHANNELS[index];
+    try {
+      player.configure({ drm: { clearKeys: {} } });
+      if (ch.clearKeys) player.configure({ drm: { clearKeys: ch.clearKeys } });
+      await player.load(ch.mpd);
+    } catch (err) {
+      console.error('Błąd ładowania kanału:', err);
+      alert('Nie udało się wczytać manifestu. Kanał może wymagać DRM/CORS lub nie jest wspierany w przeglądarce.');
+    }
+  }
+
+  window.addEventListener('load', () => { initCategories(); renderList(); /* opcjonalnie: loadChannel(0); */ });
+</script>
+</body>
+</html>
