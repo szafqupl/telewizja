@@ -580,7 +580,7 @@ const CHANNELS = [
   },
   {
     "name": "TEST",
-    "mpd": "http://89.187.178.137:8080/canalplus/tracks-v1a1/mono.m3u8"
+    "mpd": "https://liveovh011.cda.pl/enc115/tvp1hdraw/tvp1hdraw.mpd"
     }
   }
 ];
