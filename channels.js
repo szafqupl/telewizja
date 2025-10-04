@@ -582,7 +582,7 @@ const CHANNELS = [
   },
   {
     "name": "TEST",
-    "mpd": "https://liveovh011.cda.pl/enc115/tvp1hdraw/tvp1hdraw.mpd"
+    "mpd": "https://ineago2.cf.insyscd.net/eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c2VyLTI1MzU3IiwiaXAiOiIxODguMTI1LjE0OC4yNTQiLCJzaXRlIjoiSW5lYUdPIiwiU2Vzc2lvbklkIjoiZTc3Zjg4NTctOGVmZS00NTNmLTliMDktZTJmZWQwNmQ2M2RlIiwibmJmIjoxNzU5NjA2OTkzLCJleHAiOjE3NTk2OTMzOTMsImlzcyI6Imluc3lzIiwiYXVkIjoiY2RuLXByb3RlY3QifQ.5jZ2308BAwil5TJ2Kg9NN-I-_1x6-qo_l3UTz9q2Nh4/insysgo.live/live/eds/eleven-sports-1-fhd/dash/eleven-sports-1-fhd.mpd"
     }
   },
   {
