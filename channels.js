@@ -581,18 +581,10 @@ const CHANNELS = [
        "31356662636264353035316635306536": "38353735666535336531373033313835"
      }
    },
--  {
--        }
--  },
--  {
--    "name": "TEST",
--    "mpd": "https://ineago2.cf.insyscd.net/eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c2VyLTI1MzU3IiwiaXAiOiIxODguMTI1LjE0OC4yNTQiLCJzaXRlIjoiSW5lYUdPIiwiU2Vzc2lvbklkIjoiZTc3Zjg4NTctOGVmZS00NTNmLTliMDktZTJmZWQwNmQ2M2RlIiwibmJmIjoxNzU5NjA2OTkzLCJleHAiOjE3NTk2OTMzOTMsImlzcyI6Imluc3lzIiwiYXVkIjoiY2RuLXByb3RlY3QifQ.5jZ2308BAwil5TJ2Kg9NN-I-_1x6-qo_l3UTz9q2Nh4/insysgo.live/live/eds/eleven-sports-1-fhd/dash/eleven-sports-1-fhd.mpd"
--    }
--  },
-+  {
-+    "name": "TEST",
-+    "mpd": "https://ineago2.cf.insyscd.net/eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c2VyLTI1MzU3IiwiaXAiOiIxODguMTI1LjE0OC4yNTQiLCJzaXRlIjoiSW5lYUdPIiwiU2Vzc2lvbklkIjoiZTc3Zjg4NTctOGVmZS00NTNmLTliMDktZTJmZWQwNmQ2M2RlIiwibmJmIjoxNzU5NjA2OTkzLCJleHAiOjE3NTk2OTMzOTMsImlzcyI6Imluc3lzIiwiYXVkIjoiY2RuLXByb3RlY3QifQ.5jZ2308BAwil5TJ2Kg9NN-I-_1x6-qo_l3UTz9q2Nh4/insysgo.live/live/eds/eleven-sports-1-fhd/dash/eleven-sports-1-fhd.mpd"
-+  },
+   {
+     "name": "TEST",
+     "mpd": "https://ineago2.cf.insyscd.net/eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c2VyLTI1MzU3IiwiaXAiOiIxODguMTI1LjE0OC4yNTQiLCJzaXRlIjoiSW5lYUdPIiwiU2Vzc2lvbklkIjoiZTc3Zjg4NTctOGVmZS00NTNmLTliMDktZTJmZWQwNmQ2M2RlIiwibmJmIjoxNzU5NjA2OTkzLCJleHAiOjE3NTk2OTMzOTMsImlzcyI6Imluc3lzIiwiYXVkIjoiY2RuLXByb3RlY3QifQ.5jZ2308BAwil5TJ2Kg9NN-I-_1x6-qo_l3UTz9q2Nh4/insysgo.live/live/eds/eleven-sports-1-fhd/dash/eleven-sports-1-fhd.mpd"
+   },
    {
      "name": "NUTA GOLD",
      "mpd": "https://liveovh011.cda.pl/enc120/nutatvhd/nutatvhd.mpd?uid=2253542221",
