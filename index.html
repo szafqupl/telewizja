@@ -19,22 +19,193 @@
     :root {
       --bg: #0e0f13; --panel:#151821; --panel-2:#1b2030; --txt:#e8eaf0; --muted:#a6adbb;
       --accent:#5ad3ff; --accent-2:#7cffb7; --danger:#ff6b6b;
+      --sidebar-w: 340px; --bp-md: 960px; --bp-sm: 640px;
     }
     *{box-sizing:border-box}
-    html,body{height:100%;margin:0;background:var(--bg);color:var(--txt);font:14px/1.5 system-ui, Segoe UI, Inter, Roboto, sans-serif}
-    .app{display:grid;grid-template-columns:340px 1fr;height:100vh}
-    .left{background:linear-gradient(180deg,var(--panel),var(--panel-2));border-right:1px solid #242a3b;display:flex;flex-direction:column}
-    .hdr{padding:14px 16px;font-weight:700;border-bottom:1px solid #242a3b}
+    html,body{height:100%;margin:0;background:var(--bg);color:var(--txt);font:14px/1.5 system-ui, Segoe UI, Inter, Roboto, sans-serif; -webkit-tap-highlight-color: transparent;}
+    .app{display:grid;grid-template-columns:var(--sidebar-w) 1fr;height:100vh;overflow:hidden}
+    @supports (height: 100dvh){ .app{height:100dvh} }
+
+    /* Lewy panel */
+    .left{background:linear-gradient(180deg,var(--panel),var(--panel-2));border-right:1px solid #242a3b;display:flex;flex-direction:column;min-width:0;z-index:21}
+    .hdr{padding:14px 16px;font-weight:700;border-bottom:1px solid #242a3b;display:flex;justify-content:space-between;align-items:center;gap:8px}
+    .hdr .close{display:none}
     .toolbar{display:grid;grid-template-columns:1fr 140px;gap:8px;padding:10px 12px}
-    input,select{padding:10px 12px;border:1px solid #2a3147;border-radius:12px;background:#0f1320;color:var(--txt)}
+    input,select{padding:12px;border:1px solid #2a3147;border-radius:12px;background:#0f1320;color:var(--txt);min-height:44px}
     .list{overflow:auto;padding:8px}
-    .item{display:grid;grid-template-columns:1fr auto;align-items:center;gap:8px;padding:10px 12px;margin:6px 0;background:#121626;border:1px solid #222842;border-radius:12px;cursor:pointer}
+    .item{display:grid;grid-template-columns:1fr auto;align-items:center;gap:8px;padding:14px;margin:8px 0;background:#121626;border:1px solid #222842;border-radius:12px;cursor:pointer;min-height:56px}
     .item:hover{border-color:#3a4470}
     .name{font-weight:600}
-    .tags{display:flex;gap:6px}
-    .tag{font-size:12px;color:var(--muted);padding:2px 8px;border:1px solid #2a3147;border-radius:999px}
+    .tags{display:flex;gap:6px;flex-wrap:wrap}
+    .tag{font-size:12px;color:var(--muted);padding:4px 10px;border:1px solid #2a3147;border-radius:999px}
     .tag.drm{color:var(--accent-2);border-color:#2b4a3a}
     .tag.nokey{color:var(--danger);border-color:#4b2a2a}
+
+    /* Prawy panel / player */
+    .right{position:relative;background:#000;min-width:0}
+    .player-wrap{position:absolute;inset:0}
+    video{width:100%;height:100%;object-fit:contain;background:#000}
+    .notice{position:absolute;left:16px;bottom:16px;right:auto;background:#0f1323aa;border:1px solid #2b3352;border-radius:12px;padding:10px 12px;z-index:2}
+
+    /* Topbar (mobile) */
+    .topbar{display:none;position:absolute;z-index:5;left:0;right:0;top:0;padding:8px;display:none}
+    .icon{padding:10px 14px;border:1px solid #2a3147;border-radius:12px;background:#11162a;color:var(--txt);cursor:pointer}
+
+    /* Szuflada i nakładka na mobile */
+    .scrim{display:none}
+
+    /* Breakpointy */
+    @media (max-width: 960px){
+      .app{grid-template-columns:1fr}
+      .topbar{display:flex;gap:8px;align-items:center}
+      .left{
+        position:fixed;left:0;top:0;bottom:0;width:min(92vw, 360px);
+        transform:translateX(-100%);transition:transform 220ms ease;box-shadow: 0 12px 40px rgba(0,0,0,.45)
+      }
+      .hdr .close{display:inline-flex}
+      .toolbar{grid-template-columns:1fr;padding:8px}
+      .notice{left:8px;right:8px;bottom:8px}
+      .scrim{
+        position:fixed;inset:0;background:rgba(0,0,0,.6);opacity:0;pointer-events:none;transition:opacity .2s ease;display:block;z-index:10
+      }
+      .app.drawer-open .left{transform:none}
+      .app.drawer-open .scrim{opacity:1;pointer-events:auto}
+    }
+
+    @media (max-width: 640px){
+      html,body{font-size:15px}
+      .item{padding:12px}
+    }
+  </style>
+</head>
+<body>
+
+<div class="app" id="app">
+  <!-- Lewy panel: katalog kanałów -->
+  <aside class="left" aria-label="Lista kanałów" aria-modal="true">
+    <div class="hdr">
+      <div>Kanały</div>
+      <button class="icon close" id="btnClose" aria-label="Zamknij panel">✕</button>
+    </div>
+    <div class="toolbar">
+      <input id="q" type="search" placeholder="Szukaj kanału…" />
+      <select id="cat" aria-label="Filtr kategorii">
+        <option value="">Wszystkie kategorie</option>
+      </select>
+    </div>
+    <div id="list" class="list" role="listbox"></div>
+  </aside>
+
+  <!-- Prawy panel: odtwarzacz -->
+  <main class="right">
+    <div class="topbar">
+      <button class="icon" id="btnOpen" aria-expanded="false" aria-controls="app">☰ Kanały</button>
+    </div>
+    <div class="player-wrap" data-shaka-player-container>
+      <video id="video" data-shaka-player autoplay playsinline></video>
+    </div>
+    <div class="notice">Uwaga: kanały bez klucza DRM mogą nie działać w przeglądarce (DRM/CORS). W takim wypadku użyj np. VLC.</div>
+  </main>
+
+  <!-- Nakładka (kliknięcie zamyka szufladę) -->
+  <div id="scrim" class="scrim" tabindex="-1" aria-hidden="true"></div>
+</div>
+
+<script>
+  // Blokada menu kontekstowego / skrótów devtools (lekka przeszkoda, nie zabezpieczenie)
+  document.addEventListener('contextmenu', e => e.preventDefault());
+  document.addEventListener('keydown', e => {
+    if (e.key === 'F12') e.preventDefault();
+    if ((e.ctrlKey && e.shiftKey && ['I','J','C'].includes(e.key)) || (e.ctrlKey && e.key === 'U')) e.preventDefault();
+  });
+
+  let player, ui, controls;
+  async function bootShaka() {
+    const videoEl = document.getElementById('video');
+    ui = videoEl['ui']; controls = ui.getControls(); player = controls.getPlayer();
+    try { controls.getLocalization().changeLocale(['pl']); } catch(_) {}
+    player.addEventListener('error', ev => console.error('Błąd odtwarzacza:', ev.detail));
+    controls.addEventListener('error', ev => console.error('Błąd UI:', ev.detail));
+  }
+  document.addEventListener('shaka-ui-loaded', bootShaka);
+  document.addEventListener('shaka-ui-load-failed', () => console.error('Nie udało się załadować Shaka UI'));
+
+  // ===== RENDER =====
+  const appEl = document.getElementById('app');
+  const listEl = document.getElementById('list');
+  const qEl = document.getElementById('q');
+  const catEl = document.getElementById('cat');
+  const scrim = document.getElementById('scrim');
+  const btnOpen = document.getElementById('btnOpen');
+  const btnClose = document.getElementById('btnClose');
+
+  function initCategories() {
+    const set = new Set((CHANNELS || []).map(c => (c.category || 'Inne')));
+    [...set].sort().forEach(c => {
+      const opt = document.createElement('option'); opt.value = c; opt.textContent = c; catEl.appendChild(opt);
+    });
+  }
+
+  function renderList() {
+    const q = (qEl.value || '').toLowerCase().trim();
+    const cat = catEl.value;
+    listEl.innerHTML = '';
+    (CHANNELS || [])
+      .filter(c => (!q || c.name.toLowerCase().includes(q)))
+      .filter(c => (!cat || (c.category || 'Inne') === cat))
+      .forEach((c, idx) => {
+        const item = document.createElement('div'); item.className = 'item'; item.setAttribute('role','option');
+        item.innerHTML = `
+          <div>
+            <div class="name">${c.name}</div>
+            <div class="tags">
+              <div class="tag">${c.category || 'Inne'}</div>
+              <div class="tag ${c.clearKeys ? 'drm' : 'nokey'}">${c.clearKeys ? 'ClearKey' : 'brak klucza'}</div>
+            </div>
+          </div>
+          <div class="tag">${safeHost(c.mpd)}</div>`;
+        item.addEventListener('click', () => { loadChannel(idx); closeDrawer(); });
+        listEl.appendChild(item);
+      });
+  }
+
+  function safeHost(url) { try { return new URL(url).hostname.replace(/^www\./,''); } catch(_) { return '—'; } }
+
+  async function loadChannel(index) {
+    if (!player) return;
+    const ch = CHANNELS[index];
+    try {
+      player.configure({ drm: { clearKeys: {} } });
+      if (ch.clearKeys) player.configure({ drm: { clearKeys: ch.clearKeys } });
+      await player.load(ch.mpd);
+    } catch (err) {
+      console.error('Błąd ładowania kanału:', err);
+      alert('Nie udało się wczytać manifestu. Kanał może wymagać DRM/CORS lub nie jest wspierany w przeglądarce.');
+    }
+  }
+
+  // Drawer: otwieranie/zamykanie (mobile)
+  function openDrawer() {
+    appEl.classList.add('drawer-open');
+    btnOpen.setAttribute('aria-expanded','true');
+    // skup od razu na wyszukiwaniu
+    setTimeout(()=>{ qEl.focus({preventScroll:true}); }, 120);
+  }
+  function closeDrawer() {
+    appEl.classList.remove('drawer-open');
+    btnOpen.setAttribute('aria-expanded','false');
+  }
+  btnOpen.addEventListener('click', openDrawer);
+  btnClose.addEventListener('click', closeDrawer);
+  scrim.addEventListener('click', closeDrawer);
+  document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape') closeDrawer(); });
+
+  window.addEventListener('load', () => { initCategories(); renderList(); /* opcjonalnie: loadChannel(0); */ });
+  qEl.addEventListener('input', renderList);
+  catEl.addEventListener('change', renderList);
+</script>
+</body>
+</html>    .tag.nokey{color:var(--danger);border-color:#4b2a2a}
     .right{position:relative;background:#000}
     .player-wrap{position:absolute;inset:0}
     video{width:100%;height:100%;object-fit:contain;background:#000}
