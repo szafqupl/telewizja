@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>SF TV</title>
+  <title>SF TV — katalog kanałów</title>
 
   <!-- Shaka Player (UI) -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.3.5/shaka-player.ui.min.js"></script>
@@ -13,54 +13,71 @@
   <script src="https://github.com/videojs/mux.js/releases/latest/download/mux.js"></script>
 
   <!-- Twoja lista kanałów -->
-  <script src="https://szafqupl.github.io/telewizja/channels.js"></script>
+  <script src="channels.js"></script>
 
   <style>
-    :root {
-      --bg: #0e0f13; --panel:#151821; --panel-2:#1b2030; --txt:#e8eaf0; --muted:#a6adbb;
+    :root{
+      --bg:#0e0f13; --panel:#151821; --panel-2:#1b2030; --txt:#e8eaf0; --muted:#a6adbb;
       --accent:#5ad3ff; --accent-2:#7cffb7; --danger:#ff6b6b;
-      --sidebar-w: 340px; --bp-md: 960px; --bp-sm: 640px;
+      --sidebar-w:340px; --bp-md:960px; --bp-sm:640px;
     }
     *{box-sizing:border-box}
-    html,body{height:100%;margin:0;background:var(--bg);color:var(--txt);font:14px/1.5 system-ui, Segoe UI, Inter, Roboto, sans-serif; -webkit-tap-highlight-color: transparent;}
-    .app{display:grid;grid-template-columns:var(--sidebar-w) 1fr;height:100vh;overflow:hidden}
-    @supports (height: 100dvh){ .app{height:100dvh} }
+    html,body{height:100%;margin:0;background:var(--bg);color:var(--txt);font:14px/1.5 system-ui,Segoe UI,Inter,Roboto,sans-serif;-webkit-tap-highlight-color:transparent}
+
+    /* Layout: player zawsze po prawej (desktop) */
+    .app{
+      display:grid; grid-template-columns:var(--sidebar-w) 1fr;
+      height:100vh; overflow:hidden;
+    }
+    @supports (height:100dvh){ .app{height:100dvh} }
 
     /* Lewy panel */
-    .left{background:linear-gradient(180deg,var(--panel),var(--panel-2));border-right:1px solid #242a3b;display:flex;flex-direction:column;min-width:0;z-index:21}
+    .left{
+      background:linear-gradient(180deg,var(--panel),var(--panel-2));
+      border-right:1px solid #242a3b;
+      display:flex; flex-direction:column;
+      min-height:0; /* klucz dla scrolla w .list */
+      z-index:21;
+    }
     .hdr{padding:14px 16px;font-weight:700;border-bottom:1px solid #242a3b;display:flex;justify-content:space-between;align-items:center;gap:8px}
     .hdr .close{display:none}
     .toolbar{display:grid;grid-template-columns:1fr 140px;gap:8px;padding:10px 12px}
     input,select{padding:12px;border:1px solid #2a3147;border-radius:12px;background:#0f1320;color:var(--txt);min-height:44px}
-    .list{overflow:auto;padding:8px}
+
+    /* Lista kanałów — prawdziwy scroll */
+    .list{
+      flex:1; min-height:0; overflow:auto; -webkit-overflow-scrolling:touch;
+      padding:8px;
+    }
+
     .item{display:grid;grid-template-columns:1fr auto;align-items:center;gap:8px;padding:14px;margin:8px 0;background:#121626;border:1px solid #222842;border-radius:12px;cursor:pointer;min-height:56px}
     .item:hover{border-color:#3a4470}
     .name{font-weight:600}
     .tags{display:flex;gap:6px;flex-wrap:wrap}
     .tag{font-size:12px;color:var(--muted);padding:4px 10px;border:1px solid #2a3147;border-radius:999px}
-    .tag.drm{color:var(--accent-2);border-color:#2b4a3a}
+    .tag.drm{color:var(--accent-2);border-color:#2b4a2a}
     .tag.nokey{color:var(--danger);border-color:#4b2a2a}
 
     /* Prawy panel / player */
     .right{position:relative;background:#000;min-width:0}
     .player-wrap{position:absolute;inset:0}
     video{width:100%;height:100%;object-fit:contain;background:#000}
-    .notice{position:absolute;left:16px;bottom:16px;right:auto;background:#0f1323aa;border:1px solid #2b3352;border-radius:12px;padding:10px 12px;z-index:2}
+    .notice{position:absolute;left:16px;bottom:16px;background:#0f1323aa;border:1px solid #2b3352;border-radius:12px;padding:10px 12px;z-index:2}
 
-    /* Topbar (mobile) */
-    .topbar{display:none;position:absolute;z-index:5;left:0;right:0;top:0;padding:8px;display:none}
+    /* Pasek górny (mobile) */
+    .topbar{display:none;position:absolute;z-index:5;left:0;right:0;top:0;padding:8px}
     .icon{padding:10px 14px;border:1px solid #2a3147;border-radius:12px;background:#11162a;color:var(--txt);cursor:pointer}
 
-    /* Szuflada i nakładka na mobile */
+    /* Nakładka do zamykania szuflady (mobile) */
     .scrim{display:none}
 
-    /* Breakpointy */
+    /* Mobile / tablet: lewy panel to szuflada, player nadal „po prawej” (pełny obszar) */
     @media (max-width: 960px){
       .app{grid-template-columns:1fr}
       .topbar{display:flex;gap:8px;align-items:center}
       .left{
-        position:fixed;left:0;top:0;bottom:0;width:min(92vw, 360px);
-        transform:translateX(-100%);transition:transform 220ms ease;box-shadow: 0 12px 40px rgba(0,0,0,.45)
+        position:fixed;left:0;top:0;bottom:0;width:min(92vw,360px);
+        transform:translateX(-100%);transition:transform .22s ease;box-shadow:0 12px 40px rgba(0,0,0,.45)
       }
       .hdr .close{display:inline-flex}
       .toolbar{grid-template-columns:1fr;padding:8px}
@@ -72,7 +89,7 @@
       .app.drawer-open .scrim{opacity:1;pointer-events:auto}
     }
 
-    @media (max-width: 640px){
+    @media (max-width:640px){
       html,body{font-size:15px}
       .item{padding:12px}
     }
@@ -88,7 +105,7 @@
       <button class="icon close" id="btnClose" aria-label="Zamknij panel">✕</button>
     </div>
     <div class="toolbar">
-      <input id="q" type="search" placeholder="Szukaj kanału…" />
+      <input id="q" type="search" placeholder="Szukaj kanału…">
       <select id="cat" aria-label="Filtr kategorii">
         <option value="">Wszystkie kategorie</option>
       </select>
@@ -104,7 +121,7 @@
     <div class="player-wrap" data-shaka-player-container>
       <video id="video" data-shaka-player autoplay playsinline></video>
     </div>
-    <div class="notice">Uwaga: kanały bez klucza DRM mogą nie działać w przeglądarce (DRM/CORS). W takim wypadku użyj np. VLC.</div>
+    <div class="notice">Uwaga: kanały bez klucza DRM mogą nie działać w przeglądarce. W takim wypadku użyj VLC.</div>
   </main>
 
   <!-- Nakładka (kliknięcie zamyka szufladę) -->
@@ -112,122 +129,123 @@
 </div>
 
 <script>
-  // Blokada menu kontekstowego / skrótów devtools (lekka przeszkoda, nie zabezpieczenie)
+  // Anti-klik PPM/devtools (tylko drobna przeszkoda)
   document.addEventListener('contextmenu', e => e.preventDefault());
   document.addEventListener('keydown', e => {
     if (e.key === 'F12') e.preventDefault();
     if ((e.ctrlKey && e.shiftKey && ['I','J','C'].includes(e.key)) || (e.ctrlKey && e.key === 'U')) e.preventDefault();
   });
 
+  // ===== Drawer (mobile) =====
+  const appEl   = document.getElementById('app');
+  const listEl  = document.getElementById('list');
+  const qEl     = document.getElementById('q');
+  const catEl   = document.getElementById('cat');
+  const scrim   = document.getElementById('scrim');
+  const btnOpen = document.getElementById('btnOpen');
+  const btnClose= document.getElementById('btnClose');
+
+  function openDrawer(){ appEl.classList.add('drawer-open'); btnOpen?.setAttribute('aria-expanded','true'); setTimeout(()=>qEl?.focus({preventScroll:true}),120); }
+  function closeDrawer(){ appEl.classList.remove('drawer-open'); btnOpen?.setAttribute('aria-expanded','false'); }
+  btnOpen?.addEventListener('click', openDrawer);
+  btnClose?.addEventListener('click', closeDrawer);
+  scrim?.addEventListener('click', closeDrawer);
+  document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeDrawer(); });
+
+  // ===== Kategorie: heurystyczne uzupełnianie, jeśli brak =====
+  function assignCategory(name=''){
+    const n = String(name).toLowerCase();
+    if (/(disney|jimjam|junior|kids|ducktv|boomerang|cartoon|cbeebies|gametoon)/.test(n)) return 'Dzieci';
+    if (/(sport|fight|extreme|xtreme|canal\+ sport|eleven|polsat sport)/.test(n)) return 'Sport';
+    if (/(news|biznes|republika|wpolsce|tvp info|polsat news|tvn24|bbc world|al jazeera|euronews)/.test(n)) return 'Biznes/Info';
+    if (/(history|nat.?geo|bbc earth|discovery|docu|viasat|home tv|focus tv|docubox)/.test(n)) return 'Dokumenty/Nauka';
+    if (/(film|filmbox|kino|amc|drama|epic drama|hbo|cinemax|fox|axn|canal\+|stopklatka)/.test(n)) return 'Filmy/Seriale';
+    if (/(music|mixtape|power tv|nuta tv|eska tv|jazz|music box|4fun)/.test(n)) return 'Muzyka';
+    if (/\btvp\b|\bpolsat\b|\btv4\b|\btv6\b|\btvn\b|\bwp\b|\btvt\b|\btvs\b|zoom|metro/.test(n)) return 'Ogólne/PL';
+    return 'Inne';
+  }
+  (function ensureCategories(){
+    try{
+      if(Array.isArray(window.CHANNELS)){
+        for(const ch of window.CHANNELS){
+          if(!ch.category || !String(ch.category).trim()){
+            ch.category = assignCategory(ch.name || '');
+          }
+        }
+      }
+    }catch(e){ console.warn('Category assign fail', e); }
+  })();
+
+  // ===== Shaka: inicjalizacja =====
   let player, ui, controls;
-  async function bootShaka() {
+  function setupShaka(){
     const videoEl = document.getElementById('video');
     ui = videoEl['ui']; controls = ui.getControls(); player = controls.getPlayer();
     try { controls.getLocalization().changeLocale(['pl']); } catch(_) {}
     player.addEventListener('error', ev => console.error('Błąd odtwarzacza:', ev.detail));
     controls.addEventListener('error', ev => console.error('Błąd UI:', ev.detail));
   }
-  document.addEventListener('shaka-ui-loaded', bootShaka);
+  document.addEventListener('shaka-ui-loaded', setupShaka);
   document.addEventListener('shaka-ui-load-failed', () => console.error('Nie udało się załadować Shaka UI'));
 
-  // ===== RENDER =====
-  const appEl = document.getElementById('app');
-  const listEl = document.getElementById('list');
-  const qEl = document.getElementById('q');
-  const catEl = document.getElementById('cat');
-  const scrim = document.getElementById('scrim');
-  const btnOpen = document.getElementById('btnOpen');
-  const btnClose = document.getElementById('btnClose');
-
-  function initCategories() {
-    const set = new Set((CHANNELS || []).map(c => (c.category || 'Inne')));
-    [...set].sort().forEach(c => {
-      const opt = document.createElement('option'); opt.value = c; opt.textContent = c; catEl.appendChild(opt);
+  // ===== Lista / filtr =====
+  function initCategories(){
+    const set = new Set((CHANNELS||[]).map(c => (c.category || 'Inne')));
+    [...set].sort().forEach(c=>{
+      const o=document.createElement('option'); o.value=c; o.textContent=c; catEl.appendChild(o);
     });
   }
-
-  function renderList() {
-    const q = (qEl.value || '').toLowerCase().trim();
-    const cat = catEl.value;
-    listEl.innerHTML = '';
-    (CHANNELS || [])
-      .filter(c => (!q || c.name.toLowerCase().includes(q)))
-      .filter(c => (!cat || (c.category || 'Inne') === cat))
-      .forEach((c, idx) => {
-        const item = document.createElement('div'); item.className = 'item'; item.setAttribute('role','option');
-        item.innerHTML = `
+  function safeHost(url){ try { return new URL(url).hostname.replace(/^www\./,''); } catch { return '—'; } }
+  function renderList(){
+    const q=(qEl.value||'').toLowerCase().trim(); const cat=catEl.value;
+    listEl.innerHTML='';
+    (CHANNELS||[])
+      .filter(c => (!q || (c.name||'').toLowerCase().includes(q)))
+      .filter(c => (!cat || (c.category||'Inne')===cat))
+      .forEach((c,idx)=>{
+        const el=document.createElement('div'); el.className='item'; el.role='option';
+        el.innerHTML=`
           <div>
-            <div class="name">${c.name}</div>
+            <div class="name">${c.name||'Kanał'}</div>
             <div class="tags">
-              <div class="tag">${c.category || 'Inne'}</div>
-              <div class="tag ${c.clearKeys ? 'drm' : 'nokey'}">${c.clearKeys ? 'ClearKey' : 'brak klucza'}</div>
+              <div class="tag">${c.category||'Inne'}</div>
+              <div class="tag ${c.clearKeys?'drm':'nokey'}">${c.clearKeys?'ClearKey':'brak klucza'}</div>
             </div>
           </div>
-          <div class="tag">${safeHost(c.mpd)}</div>`;
-        item.addEventListener('click', () => { loadChannel(idx); closeDrawer(); });
-        listEl.appendChild(item);
+          <div class="tag">${safeHost(c.mpd||'')}</div>`;
+        el.addEventListener('click', ()=>{ loadChannel(idx); closeDrawer(); });
+        listEl.appendChild(el);
       });
   }
 
-  function safeHost(url) { try { return new URL(url).hostname.replace(/^www\./,''); } catch(_) { return '—'; } }
-
-  async function loadChannel(index) {
+  // ===== Odtwarzanie kanału (MPD/HLS) + fallback do VLC =====
+  async function loadChannel(index){
     if (!player) return;
-    const ch = CHANNELS[index];
-    try {
+    const ch = CHANNELS[index] || {};
+    const url = String(ch.mpd||'').trim();
+    const isMPD = /\.mpd(\?|$)/i.test(url);
+    const isHLS = /\.m3u8(\?|$)/i.test(url);
+
+    if (!isMPD && !isHLS){
+      // Link TS lub inny – zaproponuj VLC
+      const go = confirm("Ten link nie jest MPD/HLS. Otworzyć w VLC?");
+      if (go) location.href = "vlc://" + url;
+      return;
+    }
+    try{
       player.configure({ drm: { clearKeys: {} } });
       if (ch.clearKeys) player.configure({ drm: { clearKeys: ch.clearKeys } });
-      await player.load(ch.mpd);
-    } catch (err) {
+      await player.load(url);
+    }catch(err){
       console.error('Błąd ładowania kanału:', err);
-      alert('Nie udało się wczytać manifestu. Kanał może wymagać DRM/CORS lub nie jest wspierany w przeglądarce.');
+      alert('Nie udało się wczytać manifestu. Możliwe DRM/CORS albo zły format.');
     }
   }
 
-  // Drawer: otwieranie/zamykanie (mobile)
-  function openDrawer() {
-    appEl.classList.add('drawer-open');
-    btnOpen.setAttribute('aria-expanded','true');
-    // skup od razu na wyszukiwaniu
-    setTimeout(()=>{ qEl.focus({preventScroll:true}); }, 120);
-  }
-  function closeDrawer() {
-    appEl.classList.remove('drawer-open');
-    btnOpen.setAttribute('aria-expanded','false');
-  }
-  btnOpen.addEventListener('click', openDrawer);
-  btnClose.addEventListener('click', closeDrawer);
-  scrim.addEventListener('click', closeDrawer);
-  document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape') closeDrawer(); });
-
-  window.addEventListener('load', () => { initCategories(); renderList(); /* opcjonalnie: loadChannel(0); */ });
+  // ===== Start =====
+  window.addEventListener('load', ()=>{ initCategories(); renderList(); /* można odpalić domyślny: loadChannel(0) */ });
   qEl.addEventListener('input', renderList);
   catEl.addEventListener('change', renderList);
-</script>
-
-<script>
-function assignCategory(name=''){
-  const n=String(name).toLowerCase();
-  if (/(disney|jimjam|junior|kids|ducktv|boomerang|cartoon|cbeebies|gametoon)/.test(n)) return 'Dzieci';
-  if (/(sport|fight|extreme|xtreme|canal\+ sport|eleven|polsat sport)/.test(n)) return 'Sport';
-  if (/(news|biznes|republika|wpolsce|tvp info|polsat news|tvn24|bbc world|al jazeera|euronews)/.test(n)) return 'Biznes/Info';
-  if (/(history|nat.?geo|bbc earth|discovery|docu|viasat|home tv|focus tv|docubox)/.test(n)) return 'Dokumenty/Nauka';
-  if (/(film|filmbox|kino|amc|drama|epic drama|hbo|cinemax|fox|axn|canal\+|stopklatka)/.test(n)) return 'Filmy/Seriale';
-  if (/(music|mixtape|power tv|nuta tv|eska tv|jazz|music box|4fun)/.test(n)) return 'Muzyka';
-  if (/(tvp|polsat|tv4|tv6|tvn|wp|tvt|tvs|zoom|metro)/.test(n)) return 'Ogólne/PL';
-  return 'Inne';
-}
-(function ensureCategories(){
-  try{
-    if(Array.isArray(window.CHANNELS)){
-      for(const ch of window.CHANNELS){
-        if(!ch.category || !String(ch.category).trim()){
-          ch.category = assignCategory(ch.name||'');
-        }
-      }
-    }
-  }catch(e){ console.warn('Category assign fail', e); }
-})();
 </script>
 
 </body>
