@@ -558,10 +558,16 @@ const CHANNELS = [
     }
   },
   {
+    "name": "TEST",
+    "mpd": "https://liveovh011.cda.pl/enc115/tvp1hdraw/tvp1hdraw.mpd"
+    }
+  },
+  {    
     "name": "Power TV HD",
     "mpd": "https://liveovh010.cda.pl/enc120/powertvhd/powertvhd.mpd?uid=2253542221",
     "clearKeys": {
       "64626638336639343661613336323137": "64313761383631363433343765326236"
+      
     }
   },
   {
@@ -572,15 +578,18 @@ const CHANNELS = [
     }
   },
   {
-    "name": "NUTA GOLD",
-    "mpd": "https://liveovh011.cda.pl/enc120/nutatvhd/nutatvhd.mpd?uid=2253542221",
-    "clearKeys": {
-      "36623366333066353064363761653038": "30376666616563313961393363336665"
-    }
+        }
   },
   {
     "name": "TEST",
     "mpd": "https://liveovh011.cda.pl/enc115/tvp1hdraw/tvp1hdraw.mpd"
+    }
+  },
+  {
+    "name": "NUTA GOLD",
+    "mpd": "https://liveovh011.cda.pl/enc120/nutatvhd/nutatvhd.mpd?uid=2253542221",
+    "clearKeys": {
+      "36623366333066353064363761653038": "30376666616563313961393363336665"
     }
   }
 ];
