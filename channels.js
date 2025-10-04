@@ -1,4 +1,3 @@
-/* Generated from CDA TV.txt */
 const CHANNELS = [
   {
     "name": "TVP1 HD",
