@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SF TV — katalog kanałów</title>
+
+  <!-- Shaka Player (domyślny wygląd) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.3.5/shaka-player.ui.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/shaka-player/4.3.5/controls.min.css"/>
+
+  <!-- Lista kanałów -->
+  <script src="channels.js"></script>
+
+  <style>
+    :root{
+      --bg:#0e0f13; --panel:#151821; --panel-2:#1b2030; --txt:#e8eaf0;
+      --muted:#a6adbb; --sidebar-w:340px;
+      --t-fast:160ms; --t-med:260ms; --t-slow:420ms;
+      --ease:cubic-bezier(.21,.75,.16,1); --ease-out:cubic-bezier(.22,.61,.36,1);
+    }
+    *{box-sizing:border-box}
+    html,body{
+      height:100%; margin:0; background:var(--bg); color:var(--txt);
+      font:14px/1.5 system-ui,Segoe UI,Inter,Roboto,sans-serif;
+    }
+    .app{display:grid;grid-template-columns:var(--sidebar-w) 1fr;height:100vh;overflow:hidden;}
+    @supports(height:100dvh){.app{height:100dvh}}
+    .left{
+      background:linear-gradient(180deg,var(--panel),var(--panel-2));
+      border-right:1px solid #242a3b;
+      display:flex;flex-direction:column;min-height:0;z-index:2;
+    }
+    .hdr{padding:14px 16px;font-weight:700;border-bottom:1px solid #242a3b}
+    .toolbar{padding:10px 12px}
+    input{
+      width:100%;padding:12px;border:1px solid #2a3147;border-radius:12px;
+      background:#0f1320;color:#e8eaf0;outline:none;
+      transition:border-color var(--t-fast) var(--ease),box-shadow var(--t-fast) var(--ease);
+    }
+    input:focus{border-color:#3a60c9;box-shadow:0 0 0 4px rgba(90,211,255,.12);}
+    .list{flex:1;min-height:0;overflow:auto;-webkit-overflow-scrolling:touch;padding:8px;}
+    .list::-webkit-scrollbar{width:10px}
+    .list::-webkit-scrollbar-track{background:#0f1320;border-radius:10px}
+    .list::-webkit-scrollbar-thumb{background:#2a3147;border-radius:10px;border:2px solid #0f1320}
+    .list::-webkit-scrollbar-thumb:hover{background:#3a4470}
+    .list{scrollbar-width:thin;scrollbar-color:#2a3147 #0f1320}
+    .item{
+      display:flex;justify-content:space-between;align-items:center;
+      padding:14px;margin:8px 0;background:#121626;border:1px solid #222842;border-radius:12px;
+      cursor:pointer;min-height:56px;transform:translateY(6px);opacity:0;
+      animation:item-in var(--t-slow) var(--ease-out) forwards;
+      transition:transform var(--t-fast) var(--ease),border-color var(--t-fast) var(--ease);
+    }
+    .item:hover{transform:translateY(-2px);border-color:#3a4470;}
+    .name{font-weight:600}
+    .tag{font-size:12px;color:var(--muted);padding:4px 10px;border:1px solid #2a3147;border-radius:999px}
+    .tag.drm{color:#7cffb7;border-color:#2b4a2a}
+    .tag.nokey{color:#ff6b6b;border-color:#4b2a2a}
+
+    .right{position:relative;background:#000;min-width:0}
+    .player-wrap{position:absolute;inset:0}
+    video{width:100%;height:100%;object-fit:contain;background:#000}
+
+    .topbar{display:none;position:absolute;z-index:5;left:0;right:0;top:0;padding:8px}
+    .icon{padding:10px 14px;border:1px solid #2a3147;border-radius:12px;background:#11162a;color:#e8eaf0;cursor:pointer;}
+    @media (max-width:960px){
+      .app{grid-template-columns:1fr}
+      .topbar{display:flex;gap:8px;align-items:center}
+      .left{
+        position:fixed;left:0;top:0;bottom:0;width:min(92vw,360px);
+        transform:translateX(-102%);transition:transform var(--t-med) var(--ease);
+        box-shadow:0 12px 40px rgba(0,0,0,.45);z-index:3;
+      }
+      .app.drawer-open .left{transform:none}
+      .scrim{position:fixed;inset:0;background:rgba(0,0,0,.6);opacity:0;pointer-events:none;transition:opacity var(--t-med) var(--ease);}
+      .app.drawer-open .scrim{opacity:1;pointer-events:auto}
+    }
+
+    @keyframes item-in{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+    /* Usuwamy oblamówki z kontrolek Shaki */
+    .shaka-controls-container *,
+    .shaka-controls-container{outline:none!important;}
+    .shaka-controls-container .shaka-bottom-controls,
+    .shaka-controls-container .shaka-controls-bar,
+    .shaka-controls-container .shaka-seek-bar-container,
+    .shaka-controls-container .shaka-volume-bar{
+      border:0!important;box-shadow:none!important;background:transparent!important;
+    }
+    .right *{box-shadow:none;outline:none;}
+  </style>
+</head>
+<body>
+
+<div class="app" id="app">
+  <aside class="left">
+    <div class="hdr">Kanały</div>
+    <div class="toolbar">
+      <input id="q" type="search" placeholder="Szukaj kanału…">
+    </div>
+    <div id="list" class="list"></div>
+  </aside>
+
+  <main class="right">
+    <div class="topbar">
+      <button class="icon" id="btnOpen">☰ Kanały</button>
+    </div>
+    <div class="player-wrap" data-shaka-player-container>
+      <video id="video" data-shaka-player autoplay playsinline></video>
+    </div>
+  </main>
+
+  <div id="scrim" class="scrim"></div>
+</div>
+
+<script>
+  const appEl=document.getElementById('app');
+  const listEl=document.getElementById('list');
+  const qEl=document.getElementById('q');
+  const scrim=document.getElementById('scrim');
+  const btnOpen=document.getElementById('btnOpen');
+
+  btnOpen.addEventListener('click',()=>appEl.classList.add('drawer-open'));
+  scrim.addEventListener('click',()=>appEl.classList.remove('drawer-open'));
+  document.addEventListener('keydown',e=>{if(e.key==='Escape')appEl.classList.remove('drawer-open');});
+
+  let player;
+  document.addEventListener('shaka-ui-loaded',()=>{
+    const v=document.getElementById('video');
+    const ui=v['ui'];
+    const c=ui.getControls();
+    player=c.getPlayer();
+    try{c.getLocalization().changeLocale(['pl']);}catch(_){}
+  });
+
+  function safeHost(url){try{return new URL(url).hostname.replace(/^www\./,'');}catch{return'—';}}
+  function renderList(){
+    const q=(qEl.value||'').toLowerCase().trim();
+    listEl.innerHTML='';
+    (CHANNELS||[])
+      .filter(c=>!q||(c.name||'').toLowerCase().includes(q))
+      .forEach((c,i)=>{
+        const el=document.createElement('div');el.className='item';
+        el.style.animationDelay=(Math.min(i,12)*40)+'ms';
+        el.innerHTML=`
+          <div><div class="name">${c.name||'Kanał'}</div>
+          <div class="tag ${c.clearKeys?'drm':'nokey'}">${c.clearKeys?'ClearKey':'brak klucza'}</div></div>
+          <div class="tag">${safeHost(c.mpd||'')}</div>`;
+        el.addEventListener('click',()=>{loadChannel(i);appEl.classList.remove('drawer-open');});
+        listEl.appendChild(el);
+      });
+  }
+
+  async function loadChannel(i){
+    if(!player)return;
+    const c=CHANNELS[i]||{};const u=String(c.mpd||'').trim();
+    const ok=/\.(mpd|m3u8)(\?|$)/i.test(u);
+    if(!u){alert('Brak adresu manifestu');return;}
+    if(!ok){if(confirm('Nie MPD/HLS. Otworzyć w VLC?'))location.href='vlc://'+u;return;}
+    try{
+      player.configure({drm:{clearKeys:{}}});
+      if(c.clearKeys)player.configure({drm:{clearKeys:c.clearKeys}});
+      await player.load(u);
+    }catch(e){console.error('Błąd ładowania',e);alert('Nie udało się wczytać manifestu.');}
+  }
+
+  window.addEventListener('load',renderList);
+  qEl.addEventListener('input',renderList);
+</script>
+
+</body>
+  </html>
